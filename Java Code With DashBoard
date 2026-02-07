@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Splitter Dashboard</title>
+</head>
+<body style="margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#eef2f7; display:flex; justify-content:center; align-items:center; min-height:100vh;">
+
+<div style="background:white; padding:30px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2); width:480px;">
+    <h2 style="text-align:center; color:#333;">💰 Expense Splitter</h2>
+
+    <!-- Total Amount -->
+    <div style="margin-bottom:15px;">
+        <label style="font-weight:bold; margin-right:10px;">Total Amount:</label>
+        <input type="number" id="totalAmount" placeholder="Enter total amount"
+               style="padding:8px; border-radius:6px; border:1px solid #ccc; width:150px;">
+    </div>
+
+    <!-- Number of People -->
+    <div style="margin-bottom:15px;">
+        <label style="font-weight:bold; margin-right:10px;">Number of People:</label>
+        <input type="number" id="numPeople" placeholder="Enter number"
+               style="padding:8px; border-radius:6px; border:1px solid #ccc; width:80px;">
+        <button onclick="setPeople()" 
+                style="padding:8px 12px; margin-left:10px; background-color:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;">
+            Set
+        </button>
+    </div>
+
+    <!-- People Fields -->
+    <div id="peopleFields" style="margin-bottom:20px;"></div>
+
+    <!-- Calculate Button -->
+    <button onclick="calculateExpenses()" 
+            style="width:100%; padding:10px; background-color:#2196F3; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-bottom:15px;">
+        Calculate
+    </button>
+
+    <!-- Result -->
+    <div id="result" style="min-height:120px; padding:15px; background:#f0f4f8; border-radius:8px; border:1px solid #ccc; white-space: pre-line; overflow:auto;"></div>
+</div>
+
+<script>
+let n = 0;
+
+function setPeople() {
+    n = parseInt(document.getElementById("numPeople").value);
+    if (isNaN(n) || n <= 0) {
+        alert("Enter a valid number of people!");
+        return;
+    }
+
+    const container = document.getElementById("peopleFields");
+    container.innerHTML = "";
+
+    for (let i = 0; i < n; i++) {
+        const div = document.createElement("div");
+        div.style.marginBottom = "10px";
+        div.innerHTML = `
+            <input type="text" placeholder="Name ${i+1}" id="name${i}" 
+                   style="padding:6px; border-radius:5px; border:1px solid #ccc; width:140px; margin-right:8px;">
+            <input type="number" placeholder="Amount Paid" id="amount${i}" 
+                   style="padding:6px; border-radius:5px; border:1px solid #ccc; width:100px;">
+        `;
+        container.appendChild(div);
+    }
+}
+
+function calculateExpenses() {
+    const totalAmount = parseInt(document.getElementById("totalAmount").value);
+    if (isNaN(totalAmount) || totalAmount <= 0) {
+        alert("Enter a valid total amount!");
+        return;
+    }
+
+    const names = [];
+    const amounts = [];
+
+    for (let i = 0; i < n; i++) {
+        const name = document.getElementById(`name${i}`).value.trim();
+        const amt = parseInt(document.getElementById(`amount${i}`).value);
+        if (name === "" || isNaN(amt)) {
+            alert("Enter valid names and amounts for all people!");
+            return;
+        }
+        names.push(name);
+        amounts.push(amt);
+    }
+
+    const average = Math.floor(totalAmount / n);
+
+    const lowAmount = [];
+    const highAmount = [];
+
+    // Same logic as your Java code
+    for (let i = 0; i < n; i++) {
+        const diff = amounts[i] - average;
+        if (diff > 0) highAmount.push({id: names[i], amount: diff});
+        else if (diff < 0) lowAmount.push({id: names[i], amount: diff});
+    }
+
+    const resultArea = document.getElementById("result");
+    resultArea.innerText = "";
+
+    if (highAmount.length === 0 && lowAmount.length === 0) {
+        resultArea.innerText = "✅ No one needs to pay anything!";
+        return;
+    }
+
+    for (let i = 0; i < lowAmount.length; i++) {
+        const currLow = lowAmount[i];
+        const name = currLow.id;
+        let money = Math.abs(currLow.amount);
+        const needToGive = [];
+
+        for (let j = 0; j < highAmount.length; j++) {
+            const currHigh = highAmount[j];
+            if (money >= currHigh.amount) {
+                needToGive.push({id: currHigh.id, amount: currHigh.amount});
+                money -= currHigh.amount;
+                currHigh.amount = 0;
+            } else if (currHigh.amount > money) {
+                needToGive.push({id: currHigh.id, amount: money});
+                currHigh.amount -= money;
+                money = 0;
+            }
+        }
+
+        for (const p of needToGive) {
+            if (p.amount > 0) {
+                resultArea.innerText += `${name.toUpperCase()} needs to give ${p.amount} RUPEES TO ${p.id.toUpperCase()}\n`;
+            }
+        }
+    }
+}
+</script>
+
+</body>
+</html>
