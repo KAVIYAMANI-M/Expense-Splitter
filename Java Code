@@ -1,0 +1,77 @@
+import java.util.*;
+public class Main {
+    public static void main(String[] args) {
+      Scanner sc = new Scanner(System.in);
+      System.out.println("enter the number of people involved");
+      int n = sc.nextInt();
+      sc.nextLine();
+      String names[] = new String[n];
+      int amount[] = new int[n];
+      for(int i=0;i<n;i++)
+      {
+        System.out.println("enter the name of person "+(i+1));
+        names[i] = sc.nextLine();
+      }
+      for(int i=0;i<n;i++)
+      {
+        System.out.println("enter the amount paid by "+names[i]);
+        amount[i] = sc.nextInt();
+      }
+      System.out.println("enter the total amount");
+      int totalAmount = sc.nextInt();
+      int total = 0;
+      int average = totalAmount/n;
+      List<Pair> lowAmount = new ArrayList<>();
+      List<Pair> highAmount = new ArrayList<>();
+      for(int i=0;i<n;i++)
+      {
+        int diff = amount[i] - average;
+        if(diff > 0)
+          highAmount.add(new Pair(names[i],diff));
+        else if(diff < 0)
+          lowAmount.add(new Pair(names[i],diff));
+      }
+      if(highAmount.isEmpty() && lowAmount.isEmpty())
+      {
+        System.out.println("no needs to pay");
+        return;
+      }
+      List<Pair> needTogive = new ArrayList<>();
+      for(int i=0;i<lowAmount.size();i++)
+      {
+        Pair currLow = lowAmount.get(i);
+        String name = currLow.id;
+        int money = Math.abs(currLow.amount);
+        for(int j=0;j<highAmount.size();j++)
+        {
+          Pair currHigh = highAmount.get(j);
+          if(money >= currHigh.amount)
+          {
+            needTogive.add(new Pair(currHigh.id,currHigh.amount));
+            money = money - currHigh.amount;
+          }
+          else if(currHigh.amount > money)
+          {
+            needTogive.add(new Pair(currHigh.id,money));
+            currHigh.amount = currHigh.amount - money;
+          }
+        }
+        for(Pair p : needTogive)
+        {
+          if(p.amount > 0)
+          System.out.println(name.toUpperCase()+" needs to give "+p.amount+" RUPEES TO "+p.id.toUpperCase());
+        }
+        needTogive.clear();
+      }
+    }
+}
+class Pair 
+{
+  String id;
+  int amount;
+  Pair(String str,int val)
+  {
+    id = str;
+    amount = val;
+  }
+}
